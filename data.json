@@ -1,0 +1,20 @@
+{
+  "queue": [],
+  "yesCount": 0,
+  "noCount": 0,
+  "remarks": {},
+  "votes": {} 
+}
+
+	
+			if ( inQueue==true ) {
+				count=0; index=0;
+				const words = data.queue.split(" ");
+				
+				for (const element of words) {
+				  count++;
+				  if (element==json.myUser) { index=count; }
+				}  
+			    qBtn.innerText= `Queue ` (${index}-${count});
+			}
+			

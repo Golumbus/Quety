@@ -4,7 +4,7 @@ $file = 'data.json';
 
 // Initialize data if file doesn't exist
 if (!file_exists($file)) {
-    file_put_contents($file, json_encode(['queue' => [], 'yes' => 0, 'no' => 0, 'remarks' => []]));
+    file_put_contents($file, json_encode(['queue' => [], 'yes' => 0, 'no' => 0, 'remarks' => [], 'attendees' => []]));
 }
 
 $data = json_decode(file_get_contents($file), true);
@@ -13,11 +13,18 @@ $action = $_GET['action'] ?? '';
 $username = $_SESSION['username'] ?? '';
 
 if ($action == 'status') {
+    // Count attending users from the attendees list
+    $data['attending'] = count($data['attendees']);
     echo json_encode(['data' => $data, 'myUser' => $username]);
     exit;
 }
 
 if ($action == 'toggleQueue' && $username) {
+    // Add user to attendees list if not already there
+    if (!in_array($username, $data['attendees'])) {
+        $data['attendees'][] = $username;
+    }
+    
     if (($key = array_search($username, $data['queue'])) !== false) {
         unset($data['queue'][$key]);
         $data['queue'] = array_values($data['queue']); // Re-index
@@ -27,11 +34,21 @@ if ($action == 'toggleQueue' && $username) {
 }
 
 if ($action == 'vote' && $username) {
+    // Add user to attendees list if not already there
+    if (!in_array($username, $data['attendees'])) {
+        $data['attendees'][] = $username;
+    }
+    
     $type = $_GET['type']; // 'yes' or 'no'
     $data[$type] = ($_GET['mode'] == 'add') ? $data[$type] + 1 : max(0, $data[$type] - 1);
 }
 
 if ($action == 'remark' && $username) {
+    // Add user to attendees list if not already there
+    if (!in_array($username, $data['attendees'])) {
+        $data['attendees'][] = $username;
+    }
+    
     $msg = $_POST['remark'] ?? '';
     if ($msg == "") {
         unset($data['remarks'][$username]);
@@ -41,7 +58,7 @@ if ($action == 'remark' && $username) {
 }
 
 if ($action == 'reset') {
-    $data = ['queue' => [], 'yes' => 0, 'no' => 0, 'remarks' => []];
+    $data = ['queue' => [], 'yes' => 0, 'no' => 0, 'remarks' => [], 'attendees' => []];
 }
 
 // Add this inside your action checks in api.php
@@ -54,11 +71,17 @@ if ($action == 'leave' && $username) {
     
     // 2. Remove their remark
     unset($data['remarks'][$username]);
+    
+    // 3. Remove from attendees list
+    if (($key = array_search($username, $data['attendees'])) !== false) {
+        unset($data['attendees'][$key]);
+        $data['attendees'] = array_values($data['attendees']);
+    }
 
-    // 3. Save the cleaned data
+    // 4. Save the cleaned data
     file_put_contents($file, json_encode($data));
 
-    // 4. Kill the session and redirect
+    // 5. Kill the session and redirect
     session_destroy();
     header("Location: index.php");
     exit;

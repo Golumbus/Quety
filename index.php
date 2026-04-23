@@ -59,6 +59,8 @@ $user = $_SESSION['username'] ?? null;
             <button id="noBtn" class="btn btn-no" onclick="vote('no')">No (0)</button>
         </div>
 
+        <p id="statsLine" style="font-size: 0.9rem; color: #666; margin: 10px 0;">Attending: 0 | In Queue: 0</p>
+
         <div class="remark-area">
             <input type="text" id="remarkInput" placeholder="Add a remark...">
             <button onclick="saveRemark()" class="btn" style="background:#ddd">Save/Clear Remark</button>
@@ -105,6 +107,11 @@ $user = $_SESSION['username'] ?? null;
 			 // Update Counts
             document.getElementById('yesBtn').innerText = `Yes (${data.yes})`;
             document.getElementById('noBtn').innerText = `No (${data.no})`;
+
+            // Update Stats Line
+            const attending = data.attending || 0;
+            const inQueue = data.queue.length;
+            document.getElementById('statsLine').innerText = `Attending: ${attending} | In Queue: ${inQueue}`;
 
             // Update Remarks
             let htmla = "";

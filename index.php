@@ -52,7 +52,7 @@ $user = $_SESSION['username'] ?? null;
         
         <p>User: <strong><?php echo $user; ?></strong></p>
         
-        <button id="queueBtn" class="btn btn-queue" onclick="toggleQueue()">Queue</button>
+        <button id="queueBtn" class="btn btn-queue" onclick="toggleQueue()">Queue (<span id="queueCount">-</span>)</button>
         
         <div style="display: flex;">
             <button id="yesBtn" class="btn btn-yes" onclick="vote('yes')">Yes (0)</button>
@@ -86,9 +86,18 @@ $user = $_SESSION['username'] ?? null;
             // Update Queue Button
             const inQueue = data.queue.includes(json.myUser);
             const qBtn = document.getElementById('queueBtn');
+            const queueCountSpan = document.getElementById('queueCount');
+            
+            // Calculate position in queue (1-based index)
+            let queuePosition = 0;
+            if (inQueue) {
+                queuePosition = data.queue.indexOf(json.myUser) + 1;
+            }
+            
+            queueCountSpan.innerText = inQueue ? queuePosition : '-';
             qBtn.classList.toggle('active', inQueue);
             qBtn.style.backgroundColor = inQueue ? "green" : "yellow";
-            qBtn.innerText= inQueue? "Unqueue" : "Queue";
+            qBtn.innerHTML = inQueue? `Unqueue (${queuePosition}/${data.queue.length})` : `Queue (${data.queue.length})`;
             qBtn.style.color = inQueue ? "white" : "black";
             myState.queued = inQueue;
 			//let a=2;
